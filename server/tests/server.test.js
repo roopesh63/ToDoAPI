@@ -1,10 +1,18 @@
 const expect = require("expect")
 const request = require("supertest")
 
-const {app} = require("./server/server")
-const {Todo} = require("./server/models/todo")
+const {app} = require("./../server")
+const {Todo} = require("./../models/todo")
+const todos = [{
+  text: "first"
+},
+{
+  text: "Second"
+}]
  beforeEach((done)=>{
-   Todo.remove({}).then(()=>{done()})
+   Todo.remove({}).then(()=>{
+     return Todo.insertMany(todos)
+   }).then(()=>{done()})
  })
  describe("POST/todos",()=>{
    it("should post data to todos",(done)=>{
@@ -20,19 +28,36 @@ const {Todo} = require("./server/models/todo")
        if (err){
          return console.log(err)
        }
-       Todo.find().then((todos)=>{
+       Todo.find({text}).then((todos)=>{
          expect(todos.length).toBe(1)
          expect(todos[0].text).toBe(text)
          done()
        }).catch((e)=>done(e))
      })
    })
-   // it("should not post data in case of errors",(done)=>{
-   //   request(app).
-   //   post("/todos").
-   //   send({}).
-   //   expect(400).
-   //   expect()
+   it("should not post data in case of errors",(done)=>{
+     request(app).
+     post("/todos").
+     send({}).
+     expect(400).
+     end((err,res)=>{
+       if(err){
+         return done(err)
+       }
+       Todo.find().then((todos)=>{
+         expect(todos.length).toBe(2)
+         done()
+       }).catch((e)=>done(e))
+     })
    })
-
+ })
+ describe("Get-Todos",()=>{
+   it("should get all todos",(done)=>{
+     request(app).
+     get("/todos").
+     expect(200).
+     expect((res)=>{
+       expect(res.body.todos.length).toBe(2)
+     }).end(done)
+   })
  })
