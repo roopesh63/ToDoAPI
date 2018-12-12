@@ -4,7 +4,7 @@ const {ObjectID} = require("mongodb")
 const {mongoose} = require("./db/mongoose")
 const {Todo} = require("./models/todo")
 const {User} = require("./models/user")
-
+var port = process.env.port || 3000
 var app = express()
 app.use(bodyParser.json())
 app.post("/todos",(req,res)=>{
@@ -38,7 +38,7 @@ app.get("/todo/:id",(req,res)=>{
     res.status(400).send(e)
   })
 })
-app.listen(3000,()=>{
-  console.log("server started on 3000")
+app.listen(port,()=>{
+  console.log(`server started on ${port}`)
 })
 module.exports = {app}
