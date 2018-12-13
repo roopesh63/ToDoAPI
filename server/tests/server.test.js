@@ -6,7 +6,9 @@ const {app} = require("./../server")
 const {Todo} = require("./../models/todo")
 const todos = [{
   _id: new ObjectID(),
-  text: "first"
+  text: "first",
+  completed: true,
+  completedAt: 1234
 },
 {
   _id: new ObjectID(),
@@ -70,7 +72,7 @@ const todos = [{
    get(`/todo/${todos[0]._id.toHexString()}`).
    expect(200).
    expect((res)=>{
-     expect(res.body.todo.text).toBe(todos[0].text)
+     expect(res.body.text).toBe(todos[0].text)
    }).end(done)
  })
  it("should return 404 if not found",(done)=>{
@@ -92,14 +94,14 @@ describe("Delete Todo",()=>{
     delete(`/todo/${hexId}`).
     expect(200).
     expect((res)=>{
-      expect(res.body.todo._id).toBe(hexId)
+      expect(res.body._id).toBe(hexId)
     }).
     end((err,res)=>{
       if(err){
         return done(err)
       }
         Todo.findById(hexId).then((res)=>{
-          expect(res).toNotExist()
+          expect(res).toBeNull()
           done()
         }).catch((e)=>done(e))
     })
@@ -115,4 +117,35 @@ describe("Delete Todo",()=>{
     delete("/todo/123a").
     expect(404).end(done)
    })
+})
+describe("Patch Work tests",()=>{
+  it("should return true with updated text and time stamp",(done)=>{
+    var hexId = todos[0]._id.toHexString()
+    var text = "have a nice day"
+    request(app).
+    patch(`/todo/${hexId}`).
+    send({
+      completed: true,
+      text
+    }).
+    expect(200).
+    expect((result)=>{
+      expect(result.body.text).toBe(text)
+      expect(result.body.completed).toBe(true)
+    }).end(done)
+  })
+  it("should return false with updated text and null",(done)=>{
+    var hexId = todos[1]._id.toHexString()
+    var text = "have a nice day!!!"
+    request(app).
+    patch(`/todo/${hexId}`).
+    send({
+      text
+    }).
+    expect(200).
+    expect((result)=>{
+      expect(result.body.text).toBe(text)
+      expect(result.body.completed).toBe(false)
+    }).end(done)
+  })
 })
