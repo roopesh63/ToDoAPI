@@ -85,3 +85,34 @@ const todos = [{
    expect(404).end(done)
   })
  })
+describe("Delete Todo",()=>{
+  it("should delete document by Id",(done)=>{
+    var hexId = todos[1]._id.toHexString()
+    request(app).
+    delete(`/todo/${hexId}`).
+    expect(200).
+    expect((res)=>{
+      expect(res.body.todo._id).toBe(hexId)
+    }).
+    end((err,res)=>{
+      if(err){
+        return done(err)
+      }
+        Todo.findById(hexId).then((res)=>{
+          expect(res).toNotExist()
+          done()
+        }).catch((e)=>done(e))
+    })
+  })
+  it("should return 404 if not found",(done)=>{
+    var hexId = new ObjectID().toHexString()
+    request(app).
+    delete(`/todo/${hexId}`).
+    expect(404).end(done)
+  })
+  it("should return error",(done)=>{
+    request(app).
+    delete("/todo/123a").
+    expect(404).end(done)
+   })
+})
